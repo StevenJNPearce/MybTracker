@@ -1,0 +1,34 @@
+{
+  "name": "myb_tracker",
+  "version": "0.1.0",
+  "bin": {
+    "myb_tracker": "bin/myb_tracker.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.24",
+    "@types/node": "8.10.40",
+    "aws-cdk": "^0.28.0",
+    "i": "^0.3.6",
+    "npm": "^6.9.0",
+    "prettier": "^1.17.0",
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigateway": "^0.28.0",
+    "@aws-cdk/aws-events": "^0.28.0",
+    "@aws-cdk/aws-iam": "^0.28.0",
+    "@aws-cdk/aws-lambda": "^0.28.0",
+    "@aws-cdk/aws-logs": "^0.28.0",
+    "@aws-cdk/cdk": "^0.28.0",
+    "aws-sdk": "^2.439.0",
+    "global": "^4.3.2",
+    "serverless": "^1.43.0",
+    "source-map-support": "^0.5.9",
+    "web3": "^1.0.0-beta.55"
+  }
+}
