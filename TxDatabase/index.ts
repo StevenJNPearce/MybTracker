@@ -31,11 +31,12 @@ const options: ConnectionOptions = {
   logging: false,
   entities: [MybTransaction, MyBEvent]
 };
+let connection: any = { close: ()=> console.log('close nothing')};
 
 exports.APIHandler = async (event: APIGatewayProxyEvent): Promise<any> => {
-  const connection = await createConnection(options);
   let response: Response;
   try {
+    connection = await createConnection(options)
     const repository = connection.getRepository(MybTransaction);
     let query = event.queryStringParameters!.to
       ? repository.createQueryBuilder("tx").where("tx.to = :to", {
@@ -71,9 +72,9 @@ exports.APIHandler = async (event: APIGatewayProxyEvent): Promise<any> => {
 };
 
 exports.GraphHandler = async (): Promise<any> => {
-  const connection = await createConnection(options);
   let response: Response;
   try {
+    connection = await createConnection(options)
     const repository = connection.getRepository(MyBEvent);
     const locked = await repository
       .createQueryBuilder("evt")
@@ -114,9 +115,8 @@ exports.GraphHandler = async (): Promise<any> => {
 
 exports.handler = async () => {
   console.log("start");
-  const connection = await createConnection(options);
   try {
-    console.log(process.env);
+    connection = await createConnection(options)
     const provider = new ethers.providers.InfuraProvider(
       "mainnet",
       "0089c84cfe00443396a7a0cb856eb08a"
@@ -223,7 +223,7 @@ exports.handler = async () => {
           await connection.manager.save(mybTx).catch(e => {
             console.log(e);
             connection.close();
-          });
+          })
         }
       )
     );

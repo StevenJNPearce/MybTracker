@@ -24,13 +24,14 @@ export class MybTrackerStack extends cdk.Stack {
 
     const vpc = new ec2.VpcNetwork(this, "VPC");
 
-    const dbpass = SecretValue.plainText(pass)
+    const passw = SecretValue.plainText(pass)
+    console.log(pass)
 
     const cluster = new rds.DatabaseCluster(this, "MyRdsDb", {
       defaultDatabaseName: "txdb",
       masterUser: {
         username: "dbuser",
-        password: dbpass
+        password: passw
       },
       engine: rds.DatabaseClusterEngine.Aurora,
       instances: 1,
