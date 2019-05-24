@@ -3,9 +3,15 @@ import lambda = require("@aws-cdk/aws-lambda");
 import apigateway = require("@aws-cdk/aws-apigateway");
 import events = require("@aws-cdk/aws-events");
 import iam = require("@aws-cdk/aws-iam");
+import ec2 = require("@aws-cdk/aws-ec2");
+import rds =require("@aws-cdk/aws-rds");
+import cryptoRandomString from "crypto-random-string";
+import { SecretValue } from "@aws-cdk/cdk";
 export class MybTrackerStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const pass = cryptoRandomString({ length: 16, type: "url-safe" });
 
     const role = new iam.Role(this, "LambdaExecutionRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com")
@@ -16,13 +22,52 @@ export class MybTrackerStack extends cdk.Stack {
 
     const code = lambda.Code.asset("TxDatabase");
 
+    const vpc = new ec2.VpcNetwork(this, "VPC");
+
+    const dbpass = SecretValue.plainText(pass)
+
+    const cluster = new rds.DatabaseCluster(this, "MyRdsDb", {
+      defaultDatabaseName: "txdb",
+      masterUser: {
+        username: "dbuser",
+        password: dbpass
+      },
+      engine: rds.DatabaseClusterEngine.Aurora,
+      instances: 1,
+      instanceProps: {
+        instanceType: new ec2.InstanceType('t2.small'),
+        vpc: vpc,
+        vpcSubnets: {
+          subnetType: ec2.SubnetType.Public
+        }
+      },
+    });
+
+    const environment = {
+      TYPEORM_CONNECTION: "mysql",
+      TYPEORM_HOST: cluster.instanceEndpoints[0].hostname,
+      TYPEORM_USERNAME: "dbuser",
+      TYPEORM_PASSWORD: pass,
+      TYPEORM_DATABASE: "txdb",
+      TYPEORM_PORT: cluster.instanceEndpoints[0].port,
+      TYPEORM_SYNCHRONIZE: "true",
+      TYPEORM_LOGGING: "true",
+      TYPEORM_ENTITIES: "src/**/*.js"
+    }
+
+
+    cluster.connections.allowDefaultPortFromAnyIpv4('Open to the world');
+    cluster.instanceEndpoints[0].hostname
+    cluster.instanceEndpoints[0].port
+    
     const UpdateDatabaseFn = new lambda.Function(this, "UpdateDatabaseFn", {
       runtime: lambda.Runtime.NodeJS810,
       handler: "index.handler",
       code: code,
       role: role,
       memorySize: 512,
-      timeout: 400
+      timeout: 400,
+      environment
     });
 
     const UpdateDatabaseRule = new events.EventRule(
@@ -40,7 +85,8 @@ export class MybTrackerStack extends cdk.Stack {
       code: code,
       role: role,
       memorySize: 256,
-      timeout: 15
+      timeout: 150,
+      environment
     });
 
     const getGraphEndpoint = new apigateway.LambdaRestApi(
@@ -58,7 +104,8 @@ export class MybTrackerStack extends cdk.Stack {
       code: code,
       role: role,
       memorySize: 256,
-      timeout: 15
+      timeout: 150,
+      environment
     });
 
     const getTxsEndpoint = new apigateway.LambdaRestApi(

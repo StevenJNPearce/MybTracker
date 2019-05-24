@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { createConnection } from "typeorm";
+import { createConnection, ConnectionOptions } from "typeorm";
 import { MyBEvent } from "./entity/MybEvent/MybEvent";
 import { MybTransaction } from "./entity/MybTransaction/MybTransaction";
 import { ethers } from "ethers";
@@ -20,15 +20,26 @@ const lockAddresses = [
   "0xc7e7790fc0c81a2d880b1e119ba0921881f0cdef"
 ];
 
+const options: ConnectionOptions = {
+  type: "mysql",
+  host: process.env.TYPEORM_HOST,
+  port: parseInt(process.env.TYPEORM_PORT as string),
+  username: process.env.TYPEORM_USERNAME,
+  password: process.env.TYPEORM_PASSWORD,
+  database: process.env.TYPEORM_DATABASE,
+  synchronize: true,
+  logging: false,
+  entities: [MybTransaction, MyBEvent]
+};
+
 exports.APIHandler = async (event: APIGatewayProxyEvent): Promise<any> => {
-  const connection = await createConnection();
+  const connection = await createConnection(options);
   let response: Response;
   try {
     const repository = connection.getRepository(MybTransaction);
-    const evRepository = connection.getRepository(MyBEvent);
-    let query = event.queryStringParameters.to
+    let query = event.queryStringParameters!.to
       ? repository.createQueryBuilder("tx").where("tx.to = :to", {
-          to: ethers.utils.getAddress(event.queryStringParameters.to)
+          to: ethers.utils.getAddress(event.queryStringParameters!.to)
         })
       : repository.createQueryBuilder("tx");
     const txs = await query
@@ -60,7 +71,7 @@ exports.APIHandler = async (event: APIGatewayProxyEvent): Promise<any> => {
 };
 
 exports.GraphHandler = async (): Promise<any> => {
-  const connection = await createConnection();
+  const connection = await createConnection(options);
   let response: Response;
   try {
     const repository = connection.getRepository(MyBEvent);
@@ -103,9 +114,9 @@ exports.GraphHandler = async (): Promise<any> => {
 
 exports.handler = async () => {
   console.log("start");
-  const connection = await createConnection();
+  const connection = await createConnection(options);
   try {
-    console.log("connection");
+    console.log(process.env);
     const provider = new ethers.providers.InfuraProvider(
       "mainnet",
       "0089c84cfe00443396a7a0cb856eb08a"
@@ -166,7 +177,7 @@ exports.handler = async () => {
         log.name = event.parsed.name;
         log.p0 = event.parsed.values[0];
         log.p1 = event.parsed.values[1];
-        log.p2 = event.parsed.values[2];
+        log.p2 = ethers.utils.formatEther(event.parsed.values[2]);
         log.p3 = event.parsed.values[3];
         log.blockNumber = event.blockNumber as number;
         const block = await provider.getBlock(event.blockHash as string);
@@ -203,9 +214,9 @@ exports.handler = async () => {
           mybTx.data = tx.data;
           mybTx.from = tx.from;
           mybTx.to = tx.to ? tx.to : "0x";
-          mybTx.value = tx.value.toHexString();
-          mybTx.gasPrice = tx.gasPrice.toHexString();
-          mybTx.gasLimit = tx.gasLimit.toHexString();
+          mybTx.value = ethers.utils.formatEther(tx.value);
+          mybTx.gasPrice = ethers.utils.formatEther(tx.gasPrice);
+          mybTx.gasLimit = tx.gasLimit.toString();
           mybTx.nonce = tx.nonce;
           mybTx.hash = tx.hash;
           mybTx.events = savedLogs.filter(l => l.hash === tx.hash);
