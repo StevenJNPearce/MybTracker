@@ -4,4 +4,4 @@ import cdk = require('@aws-cdk/cdk');
 import { MybTrackerStack } from '../lib/myb_tracker-stack';
 
 const app = new cdk.App();
-new MybTrackerStack(app, 'MybTrackerStackb');
+new MybTrackerStack(app, 'MybTrackerStackd');

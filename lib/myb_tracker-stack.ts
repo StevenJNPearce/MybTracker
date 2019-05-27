@@ -46,11 +46,11 @@ export class MybTrackerStack extends cdk.Stack {
 
     const environment = {
       TYPEORM_CONNECTION: "mysql",
-      TYPEORM_HOST: cluster.instanceEndpoints[0].hostname,
+      TYPEORM_HOST: cluster.clusterEndpoint.hostname,
       TYPEORM_USERNAME: "dbuser",
       TYPEORM_PASSWORD: pass,
       TYPEORM_DATABASE: "txdb",
-      TYPEORM_PORT: cluster.instanceEndpoints[0].port,
+      TYPEORM_PORT: cluster.clusterEndpoint.port,
       TYPEORM_SYNCHRONIZE: "true",
       TYPEORM_LOGGING: "true",
       TYPEORM_ENTITIES: "src/**/*.js"
@@ -58,8 +58,6 @@ export class MybTrackerStack extends cdk.Stack {
 
 
     cluster.connections.allowDefaultPortFromAnyIpv4('Open to the world');
-    cluster.instanceEndpoints[0].hostname
-    cluster.instanceEndpoints[0].port
     
     const UpdateDatabaseFn = new lambda.Function(this, "UpdateDatabaseFn", {
       runtime: lambda.Runtime.NodeJS810,
@@ -79,6 +77,7 @@ export class MybTrackerStack extends cdk.Stack {
       }
     );
     UpdateDatabaseRule.addTarget(UpdateDatabaseFn);
+
 
     const getGraphFn = new lambda.Function(this, "GetGraphFn", {
       runtime: lambda.Runtime.NodeJS810,

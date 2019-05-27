@@ -1,9 +1,10 @@
 import "reflect-metadata";
-import { createConnection, ConnectionOptions } from "typeorm";
+import { createConnection } from "typeorm";
 import { MyBEvent } from "./entity/MybEvent/MybEvent";
 import { MybTransaction } from "./entity/MybTransaction/MybTransaction";
 import { ethers } from "ethers";
 import { APIGatewayProxyEvent } from "aws-lambda";
+import cryptoRandomString = require("crypto-random-string");
 
 interface Response {
   statusCode: number;
@@ -20,7 +21,7 @@ const lockAddresses = [
   "0xc7e7790fc0c81a2d880b1e119ba0921881f0cdef"
 ];
 
-const options: ConnectionOptions = {
+let options: any = {
   type: "mysql",
   host: process.env.TYPEORM_HOST,
   port: parseInt(process.env.TYPEORM_PORT as string),
@@ -31,10 +32,11 @@ const options: ConnectionOptions = {
   logging: false,
   entities: [MybTransaction, MyBEvent]
 };
-let connection: any = { close: ()=> console.log('close nothing')};
 
 exports.APIHandler = async (event: APIGatewayProxyEvent): Promise<any> => {
   let response: Response;
+  options.name = cryptoRandomString({ length: 6, type: 'hex'})
+  let connection
   try {
     connection = await createConnection(options)
     const repository = connection.getRepository(MybTransaction);
@@ -73,6 +75,8 @@ exports.APIHandler = async (event: APIGatewayProxyEvent): Promise<any> => {
 
 exports.GraphHandler = async (): Promise<any> => {
   let response: Response;
+  options.name = cryptoRandomString({ length: 6, type: 'hex'})
+  let connection;
   try {
     connection = await createConnection(options)
     const repository = connection.getRepository(MyBEvent);
@@ -114,7 +118,9 @@ exports.GraphHandler = async (): Promise<any> => {
 };
 
 exports.handler = async () => {
+  options.name = cryptoRandomString({ length: 6, type: 'hex'})
   console.log("start");
+  let connection;
   try {
     connection = await createConnection(options)
     const provider = new ethers.providers.InfuraProvider(
