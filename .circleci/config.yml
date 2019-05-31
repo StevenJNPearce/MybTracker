@@ -1,0 +1,35 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:8.10
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: Install
+          command: |
+            sudo npm i -g aws-cdk@0.28.0
+            npm install
+            tsc
+            cd TxDatabase
+            npm install
+            tsc
+            cd ..
+            cdk destroy
+            cdk deploy
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-
