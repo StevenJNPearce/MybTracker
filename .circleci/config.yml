@@ -20,14 +20,13 @@ jobs:
           name: Install
           command: |
             sudo npm i -g aws-cdk@0.28.0
+            sudo npm i -g typescript
             npm install
-            tsc
             cd TxDatabase
             npm install
-            tsc
             cd ..
-            cdk destroy
-            cdk deploy
+            tsc
+            cdk deploy --ci --require-approval never | cat
 
       - save_cache:
           paths:
