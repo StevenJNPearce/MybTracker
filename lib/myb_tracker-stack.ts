@@ -25,7 +25,6 @@ export class MybTrackerStack extends cdk.Stack {
     const vpc = new ec2.VpcNetwork(this, "VPC");
 
     const passw = SecretValue.plainText(pass)
-    console.log(pass)
 
     const cluster = new rds.DatabaseCluster(this, "MyRdsDb", {
       defaultDatabaseName: "txdb",
