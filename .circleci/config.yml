@@ -26,7 +26,6 @@ jobs:
             npm install
             cd ..
             tsc
-            cdk destroy --ci --require-approval never
             cdk deploy --ci --require-approval never | cat
 
       - save_cache:
