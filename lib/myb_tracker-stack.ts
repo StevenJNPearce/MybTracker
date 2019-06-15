@@ -11,7 +11,7 @@ export class MybTrackerStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const pass = cryptoRandomString({ length: 16, type: "url-safe" });
+    const pass = process.env.DB_PASS
 
     const role = new iam.Role(this, "LambdaExecutionRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com")
