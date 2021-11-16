@@ -29,7 +29,7 @@
     "@aws-cdk/aws-rds": "^0.28.0",
     "@aws-cdk/aws-secretsmanager": "^0.28.0",
     "@aws-cdk/cdk": "^0.28.0",
-    "aws-sdk": "^2.439.0",
+    "aws-sdk": "^2.814.0",
     "crypto-random-string": "^3.0.0",
     "global": "^4.3.2",
     "serverless": "^1.43.0",
